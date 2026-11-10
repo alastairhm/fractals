@@ -12,6 +12,39 @@ plain ASCII art to truecolor half-block graphics.
 | `mandelbrot3`  | Coloured ASCII (24-bit ANSI)   | Smooth (fractional) escape count and a cosine colour gradient   |
 | `mandelbrot4`  | Truecolor half blocks (`▀`)    | Two square pixels per cell, auto contrast, pan and zoom         |
 
+## Screenshots
+
+### mandelbrot4: truecolor half blocks
+
+`./mandelbrot4 120 36 1000`
+
+![mandelbrot4 showing the whole set](screenshots/mandelbrot4.png)
+
+`./mandelbrot4 120 36 2000 -0.7436 0.1318 200`: zoomed into Seahorse Valley
+
+![mandelbrot4 zoomed into Seahorse Valley](screenshots/mandelbrot4-seahorse.png)
+
+### mandelbrot3: coloured ASCII
+
+`./mandelbrot3 100 36 500`
+
+![mandelbrot3 coloured ASCII output](screenshots/mandelbrot3.png)
+
+### mandelbrot2: ASCII gradient
+
+`./mandelbrot2 100 36`
+
+![mandelbrot2 ASCII gradient output](screenshots/mandelbrot2.png)
+
+### mandelbrot: plain ASCII
+
+`./mandelbrot 100 36`
+
+![mandelbrot plain ASCII output](screenshots/mandelbrot.png)
+
+The screenshots are each program's real output, drawn to PNG with the
+JetBrains Mono font on a dark background.
+
 ## Requirements
 
 - [Free Pascal](https://www.freepascal.org/) 3.x. On Arch Linux:
