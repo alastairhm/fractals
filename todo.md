@@ -2,7 +2,7 @@
 
 Ideas for what to build next, roughly in priority order.
 
-## Mouse support (mandelbrot5 or a new mandelbrot6)
+## Mouse support (new mandelbrot6)
 
 - Click to centre and zoom in on a point, right-click to zoom out, scroll
   wheel to zoom around the cursor.
@@ -18,9 +18,9 @@ Ideas for what to build next, roughly in priority order.
   the centre of the view.
 - Only the inner loop changes: *z* starts at the pixel and *c* is held
   fixed. The cardioid/bulb shortcut must be skipped in Julia mode.
-- Pairs well with mouse support. Open question: add both to `mandelbrot5`,
-  or start `mandelbrot6` to keep the one-step-per-program pattern (which
-  means copying ~850 lines)?
+- **Decided:** mouse support and Julia mode go in a new `mandelbrot6.pas`,
+  started from a copy of `mandelbrot5.pas`, keeping the
+  one-step-per-program pattern. Leave `mandelbrot5` as it is.
 
 ## Deeper zoom
 
