@@ -14,6 +14,7 @@ program Mandelbrot5;
     arrows / h j k l   pan
     + / =   zoom in        - / _   zoom out
     ]       more iterations   [   fewer iterations
+    s       save the view as a PNG (via tools/ansi2png.py)
     r       reset view        q / Esc / Ctrl-C   quit
 
   On quit the command line for the final view is printed, so you can come
@@ -41,7 +42,7 @@ program Mandelbrot5;
 {$codepage utf8}
 
 uses
-  cthreads, Classes, SysUtils, Math, BaseUnix, termio, ctypes;
+  cthreads, Classes, SysUtils, Math, BaseUnix, termio, ctypes, Process;
 
 const
   Esc = #27;
@@ -107,6 +108,9 @@ var
   { Terminal state }
   SavedTermios: termios;
   QuitRequested: Boolean = False;
+  SaveRequested: Boolean = False;
+  StatusMsg: string = '';           { shown in place of the key help }
+  LastMs: QWord = 0;                { render time of the last frame }
 
   FS: TFormatSettings;              { '.' decimal separator, any locale }
   I: Integer;
@@ -435,42 +439,165 @@ begin
   Result := EnsureRange(Ceil(Log10(Max(Zoom, 1.0) * Width)) + 3, 6, 17);
 end;
 
-function StatusLine(Ms: QWord): string;
+function StatusLine: string;
 var
-  Warn: string;
+  Warn, Tail: string;
 begin
   { Doubles run out of precision when a pixel is ~1e-15 of the coordinate }
   if PixelSize < 1e-14 * Max(Max(Abs(CentreX), Abs(CentreY)), 1e-300) then
     Warn := '  PRECISION LIMIT'
   else
     Warn := '';
-  Result := Format(' %s %s  zoom %s  iter %d  %d ms  %d threads%s  |  ' +
-                   'arrows/hjkl pan  + - zoom  ] more iter  [ less iter  r reset  q quit',
+  if StatusMsg <> '' then
+    Tail := StatusMsg
+  else
+    Tail := 'arrows/hjkl pan  + - zoom  ] more iter  [ less iter  ' +
+            's save png  r reset  q quit';
+  Result := Format(' %s %s  zoom %s  iter %d  %d ms  %d threads%s  |  %s',
                    [FloatText(CentreX, CentreDigits),
                     FloatText(CentreY, CentreDigits),
-                    FloatText(Zoom, 4), MaxIter, Ms, ThreadCount, Warn]);
+                    FloatText(Zoom, 4), MaxIter, LastMs, ThreadCount, Warn,
+                    Tail]);
   if Length(Result) > Width then
     SetLength(Result, Width)
   else
     Result := Result + StringOfChar(' ', Width - Length(Result));
 end;
 
+function StatusText: string;
+begin
+  Result := Esc + '[' + IntToStr(Rows + 1) + ';1H' + Esc + '[7m' + StatusLine
+            + Esc + '[0m';
+end;
+
+procedure DrawStatus;
+begin
+  WriteOut(StatusText);
+end;
+
 procedure DrawInteractive;
 var
-  Start, Ms: QWord;
+  Start: QWord;
   Frame: string;
   K: Integer;
 begin
   Start := GetTickCount64;
   RenderFrame;
-  Ms := GetTickCount64 - Start;
+  LastMs := GetTickCount64 - Start;
 
   Frame := '';
   for K := 0 to Rows - 1 do
     Frame := Frame + Esc + '[' + IntToStr(K + 1) + ';1H' + Lines[K];
-  Frame := Frame + Esc + '[' + IntToStr(Rows + 1) + ';1H' + Esc + '[7m'
-           + StatusLine(Ms) + Esc + '[0m';
-  WriteOut(Frame);
+  WriteOut(Frame + StatusText);
+end;
+
+{ ---------- saving a PNG ---------- }
+
+{ tools/ansi2png.py next to the executable, or $MANDELBROT_ANSI2PNG }
+function Ansi2PngPath: string;
+begin
+  Result := GetEnvironmentVariable('MANDELBROT_ANSI2PNG');
+  if Result = '' then
+    Result := ExtractFilePath(ExpandFileName(ParamStr(0)))
+              + 'tools' + PathDelim + 'ansi2png.py';
+end;
+
+{ Last non-blank line of S, for showing an error in the status line }
+function LastLine(const S: string): string;
+var
+  L: TStringList;
+  K: Integer;
+begin
+  Result := '';
+  L := TStringList.Create;
+  try
+    L.Text := S;
+    for K := L.Count - 1 downto 0 do
+      if Trim(L[K]) <> '' then
+        Exit(Trim(L[K]));
+  finally
+    L.Free;
+  end;
+end;
+
+{ Pipe the frame on screen (without the status line) through ansi2png.py.
+  Returns '' on success, or an error message. }
+function SaveFrame(const FileName: string): string;
+var
+  Script, Frame, Output, Chunk: string;
+  P: TProcess;
+  K, Got: Integer;
+  Buf: array[0..4095] of Char;
+begin
+  Script := Ansi2PngPath;
+  if not FileExists(Script) then
+    Exit(Script + ' not found (set MANDELBROT_ANSI2PNG)');
+
+  Frame := '';
+  for K := 0 to Rows - 1 do
+    Frame := Frame + Lines[K] + #10;
+
+  Output := '';
+  P := TProcess.Create(nil);
+  try
+    P.Executable := 'python3';
+    P.Parameters.Add(Script);
+    P.Parameters.Add(FileName);
+    P.Options := [poUsePipes, poStderrToOutPut];
+    try
+      P.Execute;
+    except
+      on E: Exception do
+        Exit('could not run python3: ' + E.Message);
+    end;
+    { ansi2png.py reads all of stdin before writing anything, so the
+      frame can be written in one go without deadlocking on the pipes }
+    P.Input.WriteBuffer(Pointer(Frame)^, Length(Frame));
+    P.CloseInput;
+    repeat
+      Got := P.Output.Read(Buf, SizeOf(Buf));
+      if Got > 0 then
+      begin
+        SetString(Chunk, PChar(@Buf[0]), Got);
+        Output := Output + Chunk;
+      end;
+    until Got <= 0;
+    P.WaitOnExit;
+    { With cthreads, TProcess can report exit code 0 for a failed child,
+      so success also needs the file to exist and ansi2png.py's
+      "OUT.png WxH" confirmation line }
+    if (P.ExitCode = 0) and FileExists(FileName)
+       and (Pos(FileName + ' ', LastLine(Output)) = 1) then
+      Exit('');
+    Result := LastLine(Output);
+    if Result = '' then
+      Result := 'ansi2png.py failed (exit code ' + IntToStr(P.ExitCode) + ')';
+  finally
+    P.Free;
+  end;
+end;
+
+procedure SaveView;
+var
+  Stem, FileName, Err: string;
+  K: Integer;
+begin
+  Stem := FormatDateTime('"mandelbrot-"yyyymmdd"-"hhnnss', Now);
+  FileName := Stem + '.png';
+  K := 2;
+  while FileExists(FileName) do
+  begin
+    FileName := Stem + '-' + IntToStr(K) + '.png';
+    Inc(K);
+  end;
+  StatusMsg := 'saving ' + FileName + ' ...';
+  DrawStatus;
+  Err := SaveFrame(FileName);
+  if Err = '' then
+    StatusMsg := 'saved ' + FileName
+  else
+    StatusMsg := 'save failed: ' + Err;
+  DrawStatus;
 end;
 
 { Work out the picture size from the arguments and terminal. Returns True
@@ -555,6 +682,8 @@ begin
             MaxIter := Max(Round(MaxIter / IterStep), MinIter);
             Changed := True;
           end;
+        's', 'S':
+          SaveRequested := True;
         'r', 'R':
           begin
             CentreX := DefaultCX; CentreY := DefaultCY; Zoom := 1;
@@ -599,7 +728,17 @@ begin
         Dirty := True;
       end;
       if Dirty then
+      begin
+        StatusMsg := '';
         DrawInteractive;
+      end;
+      { After the redraw, so a save sees any view change from the same
+        batch of keys }
+      if SaveRequested then
+      begin
+        SaveRequested := False;
+        SaveView;
+      end;
 
       { Wait up to VTIME for input, then take everything queued, so held
         keys are applied together instead of lagging behind }
@@ -653,6 +792,7 @@ begin
   WriteLn('  - or _            zoom out');
   WriteLn('  ]                 more iterations');
   WriteLn('  [                 fewer iterations');
+  WriteLn('  s                 save the view as mandelbrot-DATE-TIME.png');
   WriteLn('  r                 reset the view');
   WriteLn('  q, Esc, Ctrl-C    quit and print the command for the current view');
   WriteLn;
@@ -661,6 +801,8 @@ begin
   WriteLn;
   WriteLn('When output is not a terminal, one frame is drawn (120x40 by default).');
   WriteLn('Uses every CPU core; set MANDELBROT_THREADS to change the thread count.');
+  WriteLn('Saving needs python3 with Pillow and tools/ansi2png.py next to the');
+  WriteLn('program; set MANDELBROT_ANSI2PNG to use a copy somewhere else.');
   WriteLn;
   WriteLn('Examples:');
   WriteLn('  ', Prog, '                                  explore from the whole set');

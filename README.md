@@ -61,11 +61,15 @@ tools/screenshots.sh                                  # default font
 tools/screenshots.sh --font /path/to/SomeMono.ttf     # another monospace font
 ```
 
-To render any command's colour output yourself:
+To render any command's colour output yourself, either name the command
+after `--` or pipe its output in:
 
 ```sh
 tools/ansi2png.py out.png -- ./mandelbrot4 160 50 3000 -0.1011 0.9563 300
+./mandelbrot4 160 50 3000 -0.1011 0.9563 300 | tools/ansi2png.py out.png
 ```
+
+In `mandelbrot5`, pressing `s` does this for the view on screen.
 
 ## Requirements
 
@@ -153,6 +157,7 @@ status line). The view then follows the terminal when it is resized.
 | `+` / `=`           | zoom in (×1.5)                                   |
 | `-` / `_`           | zoom out                                         |
 | `]` / `[`           | more / fewer iterations (×1.5)                   |
+| `s`                 | save the view as `mandelbrot-DATE-TIME.png`      |
 | `r`                 | reset to the whole set                           |
 | `q`, Esc, Ctrl-C    | quit                                             |
 
@@ -173,6 +178,13 @@ unless given) and exits, producing exactly the same output as
 
 Rendering uses one thread per online CPU. Set `MANDELBROT_THREADS` to
 change that, for example `MANDELBROT_THREADS=1` to compare speeds.
+
+Pressing `s` pipes the frame on screen (without the status line) through
+`tools/ansi2png.py`. The PNG is written to the current directory, and the
+status line shows its name or the error. This needs `python3` with Pillow.
+The script is looked for in `tools/` next to the `mandelbrot5` binary; set
+`MANDELBROT_ANSI2PNG` to its path if you run a copy of the binary from
+somewhere else.
 
 ## How it works
 

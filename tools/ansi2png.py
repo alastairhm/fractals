@@ -1,11 +1,13 @@
 #!/usr/bin/env python3
 """Render a program's ANSI truecolor terminal output to a PNG.
 
-Runs the command, parses its 24-bit SGR colour codes (38;2 / 48;2 / 0) and
-draws each character cell with a monospace font. Upper half block cells
-(U+2580) are drawn as two solid rectangles so half-block output stays crisp.
+Runs the command (or, with no command, reads stdin), parses its 24-bit SGR
+colour codes (38;2 / 48;2 / 0) and draws each character cell with a
+monospace font. Upper half block cells (U+2580) are drawn as two solid
+rectangles so half-block output stays crisp.
 
 usage: ansi2png.py [--font PATH] [--size PX] OUT.png -- command [args...]
+       ansi2png.py [--font PATH] [--size PX] OUT.png < output.ans
 
 Requires Pillow (python-pillow on Arch).
 """
@@ -79,22 +81,25 @@ def render(rows, font):
 
 
 def main():
-    if "--" not in sys.argv:
-        sys.exit("usage: ansi2png.py [--font PATH] [--size PX] OUT.png -- command [args...]")
-    split = sys.argv.index("--")
+    split = sys.argv.index("--") if "--" in sys.argv else len(sys.argv)
     ap = argparse.ArgumentParser(description="Render ANSI terminal output to PNG.")
     ap.add_argument("out", help="output PNG path")
     ap.add_argument("--font", default=DEFAULT_FONT, help="monospace TTF/OTF font")
     ap.add_argument("--size", type=int, default=15, help="font size in pixels")
     args = ap.parse_args(sys.argv[1:split])
-    cmd = sys.argv[split + 1:]
-    if not cmd:
-        sys.exit("ansi2png.py: no command given after --")
+    if split < len(sys.argv):
+        cmd = sys.argv[split + 1:]
+        if not cmd:
+            sys.exit("ansi2png.py: no command given after --")
+        data = subprocess.run(cmd, capture_output=True, check=True).stdout
+    elif sys.stdin.isatty():
+        sys.exit("ansi2png.py: give a command after -- or pipe ANSI text to stdin")
+    else:
+        data = sys.stdin.buffer.read()
 
-    text = subprocess.run(cmd, capture_output=True, check=True).stdout.decode("utf-8")
-    rows = parse(text)
+    rows = parse(data.decode("utf-8"))
     if not rows:
-        sys.exit("ansi2png.py: command produced no output")
+        sys.exit("ansi2png.py: no output to render")
 
     img = render(rows, ImageFont.truetype(args.font, args.size))
     img.save(args.out, optimize=True)
