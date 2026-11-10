@@ -1,0 +1,18 @@
+# Free Pascal build output
+*.o
+*.ppu
+*.a
+*.so
+link*.res
+ppas.sh
+
+# Compiled programs (no extension on Linux)
+/mandelbrot
+/mandelbrot2
+/mandelbrot3
+/mandelbrot4
+
+# Editor / backup files
+*.bak
+*~
+.*.swp
