@@ -43,7 +43,20 @@ plain ASCII art to truecolor half-block graphics.
 ![mandelbrot plain ASCII output](screenshots/mandelbrot.png)
 
 The screenshots are each program's real output, drawn to PNG with the
-JetBrains Mono font on a dark background.
+JetBrains Mono font on a dark background by
+[`tools/ansi2png.py`](tools/ansi2png.py). To regenerate them all (needs
+Python with Pillow, `sudo pacman -S python-pillow`):
+
+```sh
+tools/screenshots.sh                                  # default font
+tools/screenshots.sh --font /path/to/SomeMono.ttf     # another monospace font
+```
+
+To render any command's colour output yourself:
+
+```sh
+tools/ansi2png.py out.png -- ./mandelbrot4 160 50 3000 -0.1011 0.9563 300
+```
 
 ## Requirements
 
