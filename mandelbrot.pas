@@ -8,7 +8,7 @@ program Mandelbrot;
 {$mode objfpc}{$H+}
 
 uses
-  SysUtils;
+  SysUtils, Math;
 
 const
   { Characters from "escapes fast" to "escapes slowly" }
@@ -71,9 +71,11 @@ begin
     Halt(0);
   end;
 
-  Width   := ArgOr(1, 100);
-  Height  := ArgOr(2, 40);
-  MaxIter := ArgOr(3, 200);
+  { At least 2 columns/rows so the (Width - 1) and (Height - 1) scaling
+    never divides by zero, and at least 2 iterations so escape is possible. }
+  Width   := Max(2, ArgOr(1, 100));
+  Height  := Max(2, ArgOr(2, 40));
+  MaxIter := Max(2, ArgOr(3, 200));
 
   for Row := 0 to Height - 1 do
   begin
