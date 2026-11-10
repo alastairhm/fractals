@@ -57,7 +57,7 @@ JetBrains Mono font on a dark background by
 Python with Pillow, `sudo pacman -S python-pillow`):
 
 ```sh
-tools/screenshots.sh                                  # default font
+make screenshots                                      # default font
 tools/screenshots.sh --font /path/to/SomeMono.ttf     # another monospace font
 ```
 
@@ -83,21 +83,23 @@ In `mandelbrot5`, pressing `s` does this for the view on screen.
 
 ## Building
 
-Build one program:
-
 ```sh
-fpc -O2 mandelbrot4.pas
+make                # build every program
+make mandelbrot4    # build one
+make check          # quick tests (below)
+make screenshots    # regenerate the README screenshots
+make clean          # remove binaries and build output
 ```
+
+Without `make`, build a program directly with `fpc -O2 mandelbrot4.pas`.
 
 `mandelbrot5` links against libc for threading, so `fpc` prints two
 harmless warnings about `crtbeginS.o` and `crtendS.o` not being found. The
 program still links and runs.
 
-Or build them all:
-
-```sh
-for f in mandelbrot*.pas; do fpc -O2 "$f"; done
-```
+`make check` runs every program with `--help` and at 1×1. It also checks
+that piped `mandelbrot5` output matches `mandelbrot4` byte for byte across
+a set of views, including odd arguments.
 
 ## Usage
 

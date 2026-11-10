@@ -7,9 +7,7 @@ set -eu
 cd "$(dirname "$0")/.."
 mkdir -p screenshots
 
-for src in mandelbrot*.pas; do
-    fpc -O2 "$src" > /dev/null
-done
+make -s all > /dev/null   # fpc prints mandelbrot5's harmless crtbeginS.o warnings on stdout
 
 RENDER_OPTS="$*"
 
