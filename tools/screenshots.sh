@@ -25,3 +25,5 @@ shot mandelbrot2.png          ./mandelbrot2 100 36
 shot mandelbrot3.png          ./mandelbrot3 100 36 500
 shot mandelbrot4.png          ./mandelbrot4 120 36 1000
 shot mandelbrot4-seahorse.png ./mandelbrot4 120 36 2000 -0.7436 0.1318 200
+# Piped output, so mandelbrot5 draws one frame instead of going interactive
+shot mandelbrot5-filaments.png ./mandelbrot5 120 36 3000 -0.1011 0.9563 300

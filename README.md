@@ -2,8 +2,8 @@
 
 Mandelbrot set renderers for the terminal, written in Free Pascal.
 
-There are four programs. Each one builds on the one before it, going from
-plain ASCII art to truecolor half-block graphics.
+There are five programs. Each one builds on the one before it, going from
+plain ASCII art to an interactive, multithreaded truecolor explorer.
 
 | Program        | Output                         | What it adds                                                    |
 | -------------- | ------------------------------ | --------------------------------------------------------------- |
@@ -11,8 +11,17 @@ plain ASCII art to truecolor half-block graphics.
 | `mandelbrot2`  | ASCII gradient                 | Log-scaled character gradient, separate interior character      |
 | `mandelbrot3`  | Coloured ASCII (24-bit ANSI)   | Smooth (fractional) escape count and a cosine colour gradient   |
 | `mandelbrot4`  | Truecolor half blocks (`▀`)    | Two square pixels per cell, auto contrast, pan and zoom         |
+| `mandelbrot5`  | Interactive truecolor explorer | Keyboard pan/zoom, fits the terminal, uses every CPU core       |
 
 ## Screenshots
+
+### mandelbrot5: interactive explorer
+
+`./mandelbrot5 120 36 3000 -0.1011 0.9563 300 | cat`: a single frame of
+the branching filaments near the top bulb (piped output draws one frame
+instead of starting the explorer)
+
+![mandelbrot5 showing branching filaments near the top bulb](screenshots/mandelbrot5-filaments.png)
 
 ### mandelbrot4: truecolor half blocks
 
@@ -62,9 +71,11 @@ tools/ansi2png.py out.png -- ./mandelbrot4 160 50 3000 -0.1011 0.9563 300
 
 - [Free Pascal](https://www.freepascal.org/) 3.x. On Arch Linux:
   `sudo pacman -S fpc`
-- For `mandelbrot3` and `mandelbrot4`, a terminal with 24-bit colour
-  (kitty, alacritty, foot, wezterm, ...). `mandelbrot4` also needs a font
-  with the `▀` (U+2580) character, which almost every monospace font has.
+- For `mandelbrot3`, `mandelbrot4` and `mandelbrot5`, a terminal with
+  24-bit colour (kitty, alacritty, foot, wezterm, ...). `mandelbrot4` and
+  `mandelbrot5` also need a font with the `▀` (U+2580) character, which
+  almost every monospace font has.
+- `mandelbrot5` is Linux only (it uses termios and `sysconf`).
 
 ## Building
 
@@ -73,6 +84,10 @@ Build one program:
 ```sh
 fpc -O2 mandelbrot4.pas
 ```
+
+`mandelbrot5` links against libc for threading, so `fpc` prints two
+harmless warnings about `crtbeginS.o` and `crtendS.o` not being found. The
+program still links and runs.
 
 Or build them all:
 
@@ -122,6 +137,43 @@ Some views to try:
 Deep zooms need a higher `max_iter` to bring out detail near the edge of
 the set.
 
+### mandelbrot5
+
+```sh
+./mandelbrot5 [width] [rows] [max_iter] [centre_x] [centre_y] [zoom]
+```
+
+The arguments are the same as `mandelbrot4`'s, except that `width` and
+`rows` default to 0, which means "fit the terminal" (one row is kept for a
+status line). The view then follows the terminal when it is resized.
+
+| Key                 | Action                                           |
+| ------------------- | ------------------------------------------------ |
+| arrows, `h j k l`   | pan by a tenth of the view                       |
+| `+` / `=`           | zoom in (×1.5)                                   |
+| `-` / `_`           | zoom out                                         |
+| `]` / `[`           | more / fewer iterations (×1.5)                   |
+| `r`                 | reset to the whole set                           |
+| `q`, Esc, Ctrl-C    | quit                                             |
+
+The status line shows the centre, zoom, iteration limit, how long the last
+frame took and the thread count. It warns when the zoom is so deep that
+double precision can no longer tell neighbouring pixels apart. On quit,
+the program prints a command line that reopens the same view.
+
+```sh
+./mandelbrot5                                  # explore from the whole set
+./mandelbrot5 0 0 2000 -0.7436 0.1318 200      # start in Seahorse Valley
+./mandelbrot5 160 50 3000 -0.1011 0.9563 300 > view.ans     # save one frame
+```
+
+When its output isn't a terminal, `mandelbrot5` draws one frame (120×40
+unless given) and exits, producing exactly the same output as
+`mandelbrot4` with the same arguments.
+
+Rendering uses one thread per online CPU. Set `MANDELBROT_THREADS` to
+change that, for example `MANDELBROT_THREADS=1` to compare speeds.
+
 ## How it works
 
 Each pixel is a point *c* in the complex plane. The program repeats
@@ -137,6 +189,13 @@ of steps it took to escape decides the pixel's character or colour.
 - **mandelbrot4** works out every pixel first, then stretches the gradient
   between the lowest and highest values on screen, so zoomed-in views keep
   full contrast.
+- **mandelbrot5** shares rows out between a pool of worker threads, both
+  for working out pixels and for building the output. It also spots points
+  in the main cardioid and the period-2 bulb with a direct formula. Those
+  points never escape, so this skips the most expensive pixels in the
+  picture. A 400×120 frame of the whole set at 20000 iterations drops from
+  about 2.4 s with `mandelbrot4` to about 0.35 s on a 2-core/4-thread
+  laptop.
 
 ## License
 

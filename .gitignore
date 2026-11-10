@@ -11,6 +11,7 @@ ppas.sh
 /mandelbrot2
 /mandelbrot3
 /mandelbrot4
+/mandelbrot5
 
 # Editor / backup files
 *.bak
