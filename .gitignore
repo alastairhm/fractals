@@ -13,6 +13,9 @@ ppas.sh
 /mandelbrot4
 /mandelbrot5
 
+# PNGs saved with the s key in mandelbrot5
+/mandelbrot-*.png
+
 # Editor / backup files
 *.bak
 *~
