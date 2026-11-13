@@ -1,9 +1,17 @@
 # fractals
 
-Mandelbrot set renderers for the terminal, written in Free Pascal.
+Fractal toys in two languages:
 
-There are five programs. Each one builds on the one before it, going from
-plain ASCII art to an interactive, multithreaded truecolor explorer.
+- [`pascal/`](pascal/): Mandelbrot set renderers for the terminal, written
+  in Free Pascal (most of this README).
+- [`python/`](python/): seeded Koch-curve, Pythagoras-tree and
+  strange-attractor image generators that write retro-styled PNGs and
+  animated GIFs (see [Python scripts](#python-scripts)).
+
+There are five Pascal programs. Each one builds on the one before it, going
+from plain ASCII art to an interactive, multithreaded truecolor explorer.
+Their sources, `Makefile` and tools live in `pascal/`, and every Pascal
+command in this README is run from that directory (`cd pascal` first).
 
 | Program        | Output                         | What it adds                                                    |
 | -------------- | ------------------------------ | --------------------------------------------------------------- |
@@ -21,39 +29,39 @@ plain ASCII art to an interactive, multithreaded truecolor explorer.
 the branching filaments near the top bulb (piped output draws one frame
 instead of starting the explorer)
 
-![mandelbrot5 showing branching filaments near the top bulb](screenshots/mandelbrot5-filaments.png)
+![mandelbrot5 showing branching filaments near the top bulb](pascal/screenshots/mandelbrot5-filaments.png)
 
 ### mandelbrot4: truecolor half blocks
 
 `./mandelbrot4 120 36 1000`
 
-![mandelbrot4 showing the whole set](screenshots/mandelbrot4.png)
+![mandelbrot4 showing the whole set](pascal/screenshots/mandelbrot4.png)
 
 `./mandelbrot4 120 36 2000 -0.7436 0.1318 200`: zoomed into Seahorse Valley
 
-![mandelbrot4 zoomed into Seahorse Valley](screenshots/mandelbrot4-seahorse.png)
+![mandelbrot4 zoomed into Seahorse Valley](pascal/screenshots/mandelbrot4-seahorse.png)
 
 ### mandelbrot3: coloured ASCII
 
 `./mandelbrot3 100 36 500`
 
-![mandelbrot3 coloured ASCII output](screenshots/mandelbrot3.png)
+![mandelbrot3 coloured ASCII output](pascal/screenshots/mandelbrot3.png)
 
 ### mandelbrot2: ASCII gradient
 
 `./mandelbrot2 100 36`
 
-![mandelbrot2 ASCII gradient output](screenshots/mandelbrot2.png)
+![mandelbrot2 ASCII gradient output](pascal/screenshots/mandelbrot2.png)
 
 ### mandelbrot: plain ASCII
 
 `./mandelbrot 100 36`
 
-![mandelbrot plain ASCII output](screenshots/mandelbrot.png)
+![mandelbrot plain ASCII output](pascal/screenshots/mandelbrot.png)
 
 The screenshots are each program's real output, drawn to PNG with the
 JetBrains Mono font on a dark background by
-[`tools/ansi2png.py`](tools/ansi2png.py). To regenerate them all (needs
+[`tools/ansi2png.py`](pascal/tools/ansi2png.py). To regenerate them all (needs
 Python with Pillow, `sudo pacman -S python-pillow`):
 
 ```sh
@@ -84,6 +92,7 @@ In `mandelbrot5`, pressing `s` does this for the view on screen.
 ## Building
 
 ```sh
+cd pascal
 make                # build every program
 make mandelbrot4    # build one
 make check          # quick tests (below)
@@ -210,6 +219,107 @@ of steps it took to escape decides the pixel's character or colour.
   picture. A 400×120 frame of the whole set at 20000 iterations drops from
   about 2.4 s with `mandelbrot4` to about 0.35 s on a 2-core/4-thread
   laptop.
+
+## Python scripts
+
+Three standalone scripts in `python/` draw fractals as images. All of them
+need Python 3 with Pillow (`sudo pacman -S python-pillow`), and
+`attractor.py` also needs NumPy (`sudo pacman -S python-numpy`). They write
+their output to the current directory. The commands below are run from the
+repo root.
+
+| Script               | Draws                                                               |
+| -------------------- | ------------------------------------------------------------------- |
+| `koch_riff.py`       | Koch-style curves on a 3–8 sided polygon: classic, Cesàro or square bumps, flipped in or out at random |
+| `pythagoras_tree.py` | Pythagoras trees of squares and right triangles, with varied branch angle, wobble and lean |
+| `attractor.py`       | Clifford and de Jong strange attractors as glowing density plots    |
+
+Each image comes from a **seed**. The seed picks the shape (or the
+attractor's parameters), depth and colour palette (amber CRT, green
+phosphor, ice, and so on), so the same seed always gives the same picture. A seed can be a number or any text, and a
+random one is used if you don't give any. The script prints each seed's
+settings as it goes.
+
+```sh
+python3 python/koch_riff.py [--gif] [--sheet] [--size WxH|N] [seed ...]
+python3 python/pythagoras_tree.py [--gif] [--sheet] [--size WxH|N] [seed ...]
+python3 python/attractor.py [--gif] [--sheet] [--size WxH|N] [seed ...]
+```
+
+| Option         | Effect                                                                         |
+| -------------- | ------------------------------------------------------------------------------ |
+| *(none)*       | One PNG per seed: `koch_SEED.png` / `tree_SEED.png` / `attractor_SEED.png`     |
+| `--gif`        | Animate the fractal growing one depth at a time (for attractors, the points piling up), as a looping GIF |
+| `--sheet`      | A contact sheet with 3 columns of every seed (9 random ones if none given), saved as `sheet_SEEDS.png` / `sheet_tree_SEEDS.png` / `sheet_attractor_SEEDS.png` |
+| `--size WxH`   | Output size in pixels, or `N` for N×N (default 1080×1080). For `--sheet` this is the whole sheet |
+
+`--gif` and `--sheet` can be combined, giving an animated sheet where every
+tile grows in step. `attractor.py --sheet` always writes both the still
+`.png` and the animated `.gif`. Single images are drawn at a third of the
+size and scaled up with nearest-neighbour, which gives the chunky, low-res
+look.
+Sheet tiles are drawn at full resolution.
+
+`attractor.py` iterates one of these maps from 20,000 random starting
+points, 300 steps each, and counts how many points land in each pixel:
+
+- Clifford: *x′ = sin(a·y) + c·cos(a·x)*, *y′ = sin(b·x) + d·cos(b·y)*
+- de Jong: *x′ = sin(a·y) − cos(b·x)*, *y′ = sin(c·x) − cos(d·y)*
+
+The counts are log-scaled and coloured from black through the palette's mid
+colour to its hot colour. Parameters that collapse to a few dots are
+rejected and re-rolled. Each image takes a second or two.
+
+Examples:
+
+```sh
+python3 python/koch_riff.py 42                   # koch_42.png
+python3 python/koch_riff.py --gif hello          # a text seed, animated
+python3 python/pythagoras_tree.py --sheet        # 9 random trees on one sheet
+python3 python/pythagoras_tree.py --sheet --gif --size 1920x1080 1 2 3 4 5 6
+python3 python/attractor.py --gif 42             # attractor_42.gif
+```
+
+### Example images
+
+These are made by
+[`python/screenshots.sh`](python/screenshots.sh), which renders them into
+`python/screenshots/`. Run it again to regenerate them all (it takes about
+25 seconds).
+
+#### koch_riff.py
+
+`koch_riff.py --size 720 17`: a pentagon with square bumps
+
+![Koch riff seed 17, a green pentagon with square bumps](python/screenshots/koch.png)
+
+`koch_riff.py --sheet 1 2 3 4 5 6 7 8 9`
+
+![Contact sheet of Koch riffs for seeds 1 to 9](python/screenshots/koch-sheet.png)
+
+#### pythagoras_tree.py
+
+`pythagoras_tree.py --size 720 6`
+
+![Pink Pythagoras tree for seed 6](python/screenshots/tree.png)
+
+`pythagoras_tree.py --gif --size 540 9`: growing one level at a time
+
+![Animated blue Pythagoras tree for seed 9 growing level by level](python/screenshots/tree-grow.gif)
+
+#### attractor.py
+
+`attractor.py --size 720 14`
+
+![Amber de Jong attractor for seed 14](python/screenshots/attractor.png)
+
+`attractor.py --sheet --size 720 11 13 14 15 17 18 2 5 6`
+
+![Contact sheet of nine Clifford and de Jong attractors](python/screenshots/attractor-sheet.png)
+
+`attractor.py --gif --size 540 11`: points piling up
+
+![Animated magenta de Jong attractor for seed 11 filling in](python/screenshots/attractor-grow.gif)
 
 ## License
 

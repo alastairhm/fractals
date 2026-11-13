@@ -7,16 +7,19 @@ link*.res
 ppas.sh
 
 # Compiled programs (no extension on Linux)
-/mandelbrot
-/mandelbrot2
-/mandelbrot3
-/mandelbrot4
-/mandelbrot5
+/pascal/mandelbrot
+/pascal/mandelbrot2
+/pascal/mandelbrot3
+/pascal/mandelbrot4
+/pascal/mandelbrot5
 
 # PNGs saved with the s key in mandelbrot5
-/mandelbrot-*.png
+/pascal/mandelbrot-*.png
 
 # Editor / backup files
 *.bak
 *~
 .*.swp
+
+# Python
+__pycache__/

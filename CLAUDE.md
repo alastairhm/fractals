@@ -4,9 +4,11 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 
 ## What this is
 
-Five standalone Free Pascal programs that render the Mandelbrot set to the terminal. Each `mandelbrotN.pas` is a self-contained progression on the previous one (plain ASCII → log-scaled ASCII gradient → 24-bit coloured ASCII with smooth escape counts → truecolor `▀` half blocks with pan/zoom and auto contrast → interactive, multithreaded explorer). The README has the full feature table, argument reference and an explanation of the algorithms.
+Five standalone Free Pascal programs in `pascal/` (with their `Makefile`, `tools/` and `screenshots/`) that render the Mandelbrot set to the terminal. Each `mandelbrotN.pas` is a self-contained progression on the previous one (plain ASCII → log-scaled ASCII gradient → 24-bit coloured ASCII with smooth escape counts → truecolor `▀` half blocks with pan/zoom and auto contrast → interactive, multithreaded explorer). The README (at the repo root, image/link paths prefixed `pascal/`) has the full feature table, argument reference and an explanation of the algorithms. `python/` holds separate Python fractal scripts.
 
 ## Commands
+
+Run from `pascal/`; all paths below and in the architecture notes are relative to it.
 
 ```sh
 make                       # build all (fpc -O2; binaries land next to the sources)
