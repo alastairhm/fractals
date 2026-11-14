@@ -6,7 +6,8 @@ Fractal toys in two languages:
   in Free Pascal (most of this README).
 - [`python/`](python/): seeded Koch-curve, Pythagoras-tree and
   strange-attractor image generators that write retro-styled PNGs and
-  animated GIFs (see [Python scripts](#python-scripts)).
+  animated GIFs (see [Python scripts](#python-scripts)), plus a Mandelbrot
+  deep-zoom video renderer (see [Mandelbrot zoom video](#mandelbrot-zoom-video)).
 
 There are five Pascal programs. Each one builds on the one before it, going
 from plain ASCII art to an interactive, multithreaded truecolor explorer.
@@ -320,6 +321,63 @@ These are made by
 `attractor.py --gif --size 540 11`: points piling up
 
 ![Animated magenta de Jong attractor for seed 11 filling in](python/screenshots/attractor-grow.gif)
+
+### Mandelbrot zoom video
+
+`zoom_video.py` renders an MP4 that dives from the whole Mandelbrot set to
+the spot used by the Andromeda Research demo (−1.74747070750 +
+0.00087953063i, magnification 11.1 million). It uses the edge-band look of
+`andromeda_zoom.py`: only the boundaries between iteration bands are drawn,
+coloured by iteration count, on black. Each frame is rendered at 640×480 and
+scaled up 2× with nearest-neighbour, giving a 1280×960, 30 fps video.
+
+It needs NumPy, Numba, Pillow and `ffmpeg` (`sudo pacman -S ffmpeg`). The
+Python packages are listed in `python/requirements.txt`, so a virtual
+environment is the easiest way to get them:
+
+```sh
+cd python
+python3 -m venv .venv
+.venv/bin/pip install -r requirements.txt
+source .venv/bin/activate
+```
+
+Then, from `python/`:
+
+```sh
+python zoom_video.py                                   # mandel_zoom.mp4, 20 s
+python zoom_video.py --turns 1 -o mandel_zoom_spin.mp4  # one clockwise turn
+python zoom_video.py --turns 1 --roundtrip -o mandel_roundtrip.mp4  # in and back out, loops
+python zoom_video.py --preview 0 0.5 0.8 1             # PNG stills at those points
+```
+
+| Option        | Effect                                                                    |
+| ------------- | ------------------------------------------------------------------------- |
+| `--turns N`   | Rotate the view clockwise N times over the video (default 0)              |
+| `--roundtrip` | Zoom in, then back out (twice as long). The rotation keeps going the same way, so the video loops |
+| `--preview U ...` | Instead of a video, save `preview_U.png` stills at points U along the zoom (0 = start, 1 = end) |
+| `-o FILE`     | Output file (default `mandel_zoom.mp4`)                                   |
+
+The zoom speed is exponential with a smooth start and stop, and the centre
+glides onto the target during the first 30% of the dive. The iteration limit
+rises from 300 to 1356 as the view narrows. The palette blends from log-scaled
+(wide views) to linear (deep views), and each frame's colour range is smoothed
+over neighbouring frames so the colours don't flicker.
+
+Rendering takes two passes. The first renders every frame with Numba across
+all cores, keeps the iteration counts in a temporary `.iters.tmp` file next to
+the output (about 370 MB for the default video, deleted afterwards), and
+works out each frame's colour range in worker threads. The second colours the
+frames in parallel and pipes them to `ffmpeg`. On a 2-core / 4-thread laptop
+the default video takes about 30 seconds and the round trip about a minute.
+`ZOOM_WORKERS=N` sets the number of worker threads (default: CPU count).
+
+`andromeda_zoom.py` renders a single still in the same style:
+
+```sh
+python andromeda_zoom.py                               # andromeda_zoom.png at the target
+python andromeda_zoom.py --cx -0.65 --cy 0 --mag 0.9 --iter 300 --log -o whole.png
+```
 
 ## License
 
