@@ -1,5 +1,26 @@
 # fractals
 
+**Contents**
+
+- [Screenshots](#screenshots)
+  - [mandelbrot5: interactive explorer](#mandelbrot5-interactive-explorer)
+  - [mandelbrot4: truecolor half blocks](#mandelbrot4-truecolor-half-blocks)
+  - [mandelbrot3: coloured ASCII](#mandelbrot3-coloured-ascii)
+  - [mandelbrot2: ASCII gradient](#mandelbrot2-ascii-gradient)
+  - [mandelbrot: plain ASCII](#mandelbrot-plain-ascii)
+- [Requirements](#requirements)
+- [Building](#building)
+- [Usage](#usage)
+  - [mandelbrot, mandelbrot2, mandelbrot3](#mandelbrot-mandelbrot2-mandelbrot3)
+  - [mandelbrot4](#mandelbrot4)
+  - [mandelbrot5](#mandelbrot5)
+- [How it works](#how-it-works)
+- [Python scripts](#python-scripts)
+  - [Example images](#example-images)
+  - [Mandelbrot zoom video](#mandelbrot-zoom-video)
+- [Blog posts](#blog-posts)
+- [License](#license)
+
 Fractal toys in two languages:
 
 - [`pascal/`](pascal/): Mandelbrot set renderers for the terminal, written
@@ -21,27 +42,6 @@ command in this README is run from that directory (`cd pascal` first).
 | `mandelbrot3`  | Coloured ASCII (24-bit ANSI)   | Smooth (fractional) escape count and a cosine colour gradient   |
 | `mandelbrot4`  | Truecolor half blocks (`▀`)    | Two square pixels per cell, auto contrast, pan and zoom         |
 | `mandelbrot5`  | Interactive truecolor explorer | Keyboard pan/zoom, fits the terminal, uses every CPU core       |
-
-## Contents
-
-- [Screenshots](#screenshots)
-  - [mandelbrot5: interactive explorer](#mandelbrot5-interactive-explorer)
-  - [mandelbrot4: truecolor half blocks](#mandelbrot4-truecolor-half-blocks)
-  - [mandelbrot3: coloured ASCII](#mandelbrot3-coloured-ascii)
-  - [mandelbrot2: ASCII gradient](#mandelbrot2-ascii-gradient)
-  - [mandelbrot: plain ASCII](#mandelbrot-plain-ascii)
-- [Requirements](#requirements)
-- [Building](#building)
-- [Usage](#usage)
-  - [mandelbrot, mandelbrot2, mandelbrot3](#mandelbrot-mandelbrot2-mandelbrot3)
-  - [mandelbrot4](#mandelbrot4)
-  - [mandelbrot5](#mandelbrot5)
-- [How it works](#how-it-works)
-- [Python scripts](#python-scripts)
-  - [Example images](#example-images)
-  - [Mandelbrot zoom video](#mandelbrot-zoom-video)
-- [Blog posts](#blog-posts)
-- [License](#license)
 
 ## Screenshots
 
