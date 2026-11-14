@@ -22,6 +22,27 @@ command in this README is run from that directory (`cd pascal` first).
 | `mandelbrot4`  | Truecolor half blocks (`▀`)    | Two square pixels per cell, auto contrast, pan and zoom         |
 | `mandelbrot5`  | Interactive truecolor explorer | Keyboard pan/zoom, fits the terminal, uses every CPU core       |
 
+## Contents
+
+- [Screenshots](#screenshots)
+  - [mandelbrot5: interactive explorer](#mandelbrot5-interactive-explorer)
+  - [mandelbrot4: truecolor half blocks](#mandelbrot4-truecolor-half-blocks)
+  - [mandelbrot3: coloured ASCII](#mandelbrot3-coloured-ascii)
+  - [mandelbrot2: ASCII gradient](#mandelbrot2-ascii-gradient)
+  - [mandelbrot: plain ASCII](#mandelbrot-plain-ascii)
+- [Requirements](#requirements)
+- [Building](#building)
+- [Usage](#usage)
+  - [mandelbrot, mandelbrot2, mandelbrot3](#mandelbrot-mandelbrot2-mandelbrot3)
+  - [mandelbrot4](#mandelbrot4)
+  - [mandelbrot5](#mandelbrot5)
+- [How it works](#how-it-works)
+- [Python scripts](#python-scripts)
+  - [Example images](#example-images)
+  - [Mandelbrot zoom video](#mandelbrot-zoom-video)
+- [Blog posts](#blog-posts)
+- [License](#license)
+
 ## Screenshots
 
 ### mandelbrot5: interactive explorer
@@ -396,6 +417,20 @@ Stills from along the default zoom, made by
 python andromeda_zoom.py                               # andromeda_zoom.png at the target
 python andromeda_zoom.py --cx -0.65 --cy 0 --mag 0.9 --iter 300 --log -o whole.png
 ```
+
+## Blog posts
+
+I've written about this repo as it grew, on my blog
+[0x32](https://blog.0x32.co.uk/):
+
+- [Vibe Coding Mandelbrots in Pascal](https://blog.0x32.co.uk/posts/vibe-coding-pascal-fractals/):
+  the first four Pascal programs, from plain ASCII to truecolor half blocks.
+- [Retro Fractal Zoom](https://blog.0x32.co.uk/posts/retro-fractal-zoom/):
+  the retro-styled Mandelbrot zoom video.
+- [More Fractals: An Interactive Explorer and Some Python](https://blog.0x32.co.uk/posts/more-fractals-explorer-and-python/):
+  the `mandelbrot5` explorer and the Koch, Pythagoras-tree and attractor scripts.
+- [The Fractal Zoom Video, Now in the Repo](https://blog.0x32.co.uk/posts/fractal-zoom-video-script/):
+  `zoom_video.py`, its spin and round-trip options, and making it faster.
 
 ## License
 
