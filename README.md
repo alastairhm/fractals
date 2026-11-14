@@ -439,6 +439,8 @@ And about the related repos listed under [Links](#links):
   building [fractalPy](https://github.com/alastairhm/fractalPy).
 - [Generative Art with Context Free](https://blog.0x32.co.uk/posts/contextfree-generative-art/):
   the [ContextFree](https://github.com/alastairhm/ContextFree) scripts.
+- [Raspberry Pi Pico W Mandelbrot Set](https://blog.0x32.co.uk/posts/pico4/):
+  the Mandelbrot scripts in [pico_w](https://github.com/alastairhm/pico_w).
 
 ## Links
 
@@ -456,6 +458,9 @@ My other generative-art, fractal and Pascal repos:
 - [pascal](https://github.com/alastairhm/pascal): Adventures in Pascal,
   relearning Pascal with [Free Pascal](https://www.freepascal.org/) by
   working through exercises from classic Pascal books.
+- [pico_w](https://github.com/alastairhm/pico_w): MicroPython examples for
+  the Raspberry Pi Pico W, including a Mandelbrot set in ASCII
+  (`mandelbrot.py`) and on an OLED display (`mand_oled.py`).
 
 ## License
 
