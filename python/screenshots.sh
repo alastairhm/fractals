@@ -1,7 +1,8 @@
 #!/bin/sh
 # Regenerate the README example images in python/screenshots/.
 # Run from anywhere: python/screenshots.sh
-# Needs python3 with Pillow and NumPy.
+# Needs python3 with Pillow and NumPy; the zoom stills also need Numba,
+# taken from python/.venv if it exists (see requirements.txt).
 set -eu
 
 cd "$(dirname "$0")"
@@ -29,3 +30,13 @@ rm sheet_attractor_11-13-14-15-17-18-2-5-6.gif
 echo "screenshots/attractor-sheet.png"
 
 run attractor.py       attractor_11.gif              attractor-grow.gif --gif --size 540 11
+
+# zoom_video.py needs Numba, so prefer the venv's python
+zpy=python3
+venv="$(cd .. && pwd)/.venv/bin/python"
+if [ -x "$venv" ]; then zpy=$venv; fi
+"$zpy" ../zoom_video.py --preview 0 0.35 0.8 1 > /dev/null
+for u in 0.00 0.35 0.80 1.00; do
+    mv "preview_$u.png" "zoom-$u.png"
+    echo "screenshots/zoom-$u.png"
+done

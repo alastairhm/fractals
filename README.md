@@ -286,7 +286,8 @@ python3 python/attractor.py --gif 42             # attractor_42.gif
 These are made by
 [`python/screenshots.sh`](python/screenshots.sh), which renders them into
 `python/screenshots/`. Run it again to regenerate them all (it takes about
-25 seconds).
+30 seconds; the zoom stills below need the virtual environment described
+there).
 
 #### koch_riff.py
 
@@ -371,6 +372,23 @@ works out each frame's colour range in worker threads. The second colours the
 frames in parallel and pipes them to `ffmpeg`. On a 2-core / 4-thread laptop
 the default video takes about 30 seconds and the round trip about a minute.
 `ZOOM_WORKERS=N` sets the number of worker threads (default: CPU count).
+
+Stills from along the default zoom, made by
+`zoom_video.py --preview 0 0.35 0.8 1` in
+[`python/screenshots.sh`](python/screenshots.sh):
+
+<table>
+<tr>
+<td><img src="python/screenshots/zoom-0.00.png" alt="Zoom start: the whole Mandelbrot set outlined in green, cyan and violet bands"></td>
+<td><img src="python/screenshots/zoom-0.35.png" alt="Zoom at 0.35: the main cardioid and the antenna toward the target, in yellow and green bands"></td>
+</tr>
+<tr><td align="center">0: the whole set</td><td align="center">0.35: heading down the antenna (42×)</td></tr>
+<tr>
+<td><img src="python/screenshots/zoom-0.80.png" alt="Zoom at 0.8: a spiral mini-structure with red and orange filaments"></td>
+<td><img src="python/screenshots/zoom-1.00.png" alt="Zoom end: a ring of spirals in red, orange, green and pink at 11.1 million times magnification"></td>
+</tr>
+<tr><td align="center">0.8: 4.3 million×</td><td align="center">1: the target, 11.1 million×</td></tr>
+</table>
 
 `andromeda_zoom.py` renders a single still in the same style:
 
