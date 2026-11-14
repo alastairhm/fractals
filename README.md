@@ -442,7 +442,7 @@ And about the related repos listed under [Links](#links):
 
 ## Links
 
-My other generative-art and fractal repos:
+My other generative-art, fractal and Pascal repos:
 
 - [fractalPy](https://github.com/alastairhm/fractalPy): a small
   Numba-accelerated Mandelbrot set renderer in Python.
@@ -453,6 +453,9 @@ My other generative-art and fractal repos:
 - [processing](https://github.com/alastairhm/processing): sketches for
   [Processing](https://processing.org/): Truchet tiles, circle and
   rectangle filling, pixel painting and shapes.
+- [pascal](https://github.com/alastairhm/pascal): Adventures in Pascal,
+  relearning Pascal with [Free Pascal](https://www.freepascal.org/) by
+  working through exercises from classic Pascal books.
 
 ## License
 
