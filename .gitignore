@@ -24,3 +24,6 @@ ppas.sh
 # Python
 __pycache__/
 .venv/
+
+# Rendered videos
+*.mp4
