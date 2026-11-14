@@ -19,6 +19,7 @@
   - [Example images](#example-images)
   - [Mandelbrot zoom video](#mandelbrot-zoom-video)
 - [Blog posts](#blog-posts)
+- [Links](#links)
 - [License](#license)
 
 Fractal toys in two languages:
@@ -431,6 +432,27 @@ I've written about this repo as it grew, on my blog
   the `mandelbrot5` explorer and the Koch, Pythagoras-tree and attractor scripts.
 - [The Fractal Zoom Video, Now in the Repo](https://blog.0x32.co.uk/posts/fractal-zoom-video-script/):
   `zoom_video.py`, its spin and round-trip options, and making it faster.
+
+And about the related repos listed under [Links](#links):
+
+- [Vibe Coding fractalPy with Claude](https://blog.0x32.co.uk/posts/fractalpy/):
+  building [fractalPy](https://github.com/alastairhm/fractalPy).
+- [Generative Art with Context Free](https://blog.0x32.co.uk/posts/contextfree-generative-art/):
+  the [ContextFree](https://github.com/alastairhm/ContextFree) scripts.
+
+## Links
+
+My other generative-art and fractal repos:
+
+- [fractalPy](https://github.com/alastairhm/fractalPy): a small
+  Numba-accelerated Mandelbrot set renderer in Python.
+- [ContextFree](https://github.com/alastairhm/ContextFree): scripts for
+  [Context Free Art](https://www.contextfreeart.org/), a grammar for
+  generating images from drawing rules, with their rendered output and a
+  Docker image to run them.
+- [processing](https://github.com/alastairhm/processing): sketches for
+  [Processing](https://processing.org/): Truchet tiles, circle and
+  rectangle filling, pixel painting and shapes.
 
 ## License
 
