@@ -31,7 +31,7 @@ Fractal toys in three languages:
   strange-attractor image generators that write retro-styled PNGs and
   animated GIFs (see [Python scripts](#python-scripts)), plus a Mandelbrot
   deep-zoom video renderer (see [Mandelbrot zoom video](#mandelbrot-zoom-video)).
-- [`bbc/`](bbc/): a Mandelbrot set in BBC BASIC for the BBC Micro, drawn in
+- [`bbc/`](bbc/): Mandelbrot sets in BBC BASIC for the BBC Micro, drawn in
   MODE 2 (see [BBC Micro BASIC](#bbc-micro-basic)).
 
 There are five Pascal programs. Each one builds on the one before it, going
@@ -424,9 +424,15 @@ python andromeda_zoom.py --cx -0.65 --cy 0 --mag 0.9 --iter 300 --log -o whole.p
 
 ## BBC Micro BASIC
 
-`bbc/MANDEL.bas` is a Mandelbrot set for the BBC Micro in BBC BASIC 2,
-drawn in MODE 2 (160×256 pixels, 8 colours). `bbc/mandel.ssd` is an Acorn
-DFS disc image with the same program saved as `MANDEL`.
+Two Mandelbrot programs for the BBC Micro in BBC BASIC 2, drawn in MODE 2
+(160×256 pixels, 8 colours):
+
+| Program   | Listing                               | Draws the picture                                          |
+| --------- | ------------------------------------- | ---------------------------------------------------------- |
+| `MANDEL`  | [`MANDEL.bas`](bbc/MANDEL.bas)   | a row at a time, from the top and bottom edges inwards     |
+| `MANDEL2` | [`MANDEL2.bas`](bbc/MANDEL2.bas) | one big block first, then halving the block size each pass |
+
+`bbc/mandel.ssd` is an Acorn DFS disc image with both programs on it.
 
 ![BBC Micro MODE 2 Mandelbrot set](bbc/screenshots/mandel.png)
 
@@ -435,9 +441,10 @@ To run it in an emulator such as [b2](https://github.com/tom-seddon/b2) or
 
 ```basic
 CHAIN "MANDEL"
+CHAIN "MANDEL2"
 ```
 
-Or paste the listing in `MANDEL.bas` at the `>` prompt and type `RUN`.
+Or paste a listing at the `>` prompt and type `RUN`.
 Press any key when it's finished to return to MODE 7.
 
 How it works:
@@ -453,8 +460,26 @@ How it works:
 - Escaping points are coloured `1 + n MOD 7`, cycling through the seven
   non-black colours. Points that never escape are black.
 
-A full screen takes about 39 minutes on a 2 MHz Model B (measured in emulated
-time), filling in from the edges and slowing down as it nears the set.
+`MANDEL2` resolves the picture progressively, the way image viewers used to
+show a slow download:
+
+![MANDEL2 part-way through its 4-pixel pass](bbc/screenshots/mandel2-resolving.png)
+
+![MANDEL2 finished](bbc/screenshots/mandel2.png)
+
+- The first pass works out one point and fills the whole screen with its
+  colour. Each later pass halves the block size (256, 128, 64 … 2, 1
+  pixels) and fills each block with the colour of its corner point.
+- A pass only works out the points that are new. Points on the previous
+  pass's grid are skipped, because their blocks are already the right
+  colour. So every pixel is still calculated just once.
+- OS 1.20 on the Model B has no rectangle fill, so each block is drawn as
+  two filled triangles (`PLOT 85`). The last pass plots single points.
+
+The finished picture is the same as `MANDEL`'s. Measured in emulated time
+on a 2 MHz Model B, a full screen takes about 39 minutes with `MANDEL` and
+about 43 with `MANDEL2`. The extra 4 minutes go on drawing the blocks, but
+`MANDEL2` shows a recognisable set within the first minute or so.
 
 ## Blog posts
 
