@@ -441,8 +441,11 @@ fill.
 
 ![BBC Micro MODE 2 Mandelbrot set](bbc/screenshots/mandel.png)
 
-To run it in an emulator such as [b2](https://github.com/tom-seddon/b2) or
-[jsbeeb](https://bbc.xania.org/), load `mandel.ssd` into drive 0 and type:
+They were typed in, run and timed in the
+[MacBeeb](https://github.com/acorn-playground/macbeeb) emulator. To run
+them in MacBeeb or another emulator such as
+[b2](https://github.com/tom-seddon/b2) or [jsbeeb](https://bbc.xania.org/),
+load `mandel.ssd` into drive 0 and type:
 
 ```basic
 CHAIN "MANDEL"
@@ -531,6 +534,9 @@ I've written about this repo as it grew, on my blog
   the `mandelbrot5` explorer and the Koch, Pythagoras-tree and attractor scripts.
 - [The Fractal Zoom Video, Now in the Repo](https://blog.0x32.co.uk/posts/fractal-zoom-video-script/):
   `zoom_video.py`, its spin and round-trip options, and making it faster.
+- [Mandelbrots on the BBC Micro](https://blog.0x32.co.uk/posts/bbc-micro-mandelbrot/):
+  the three BBC BASIC programs in `bbc/`, ECF shading on the Master 128,
+  and how long they really take.
 
 And about the related repos listed under [Links](#links):
 
