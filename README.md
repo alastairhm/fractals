@@ -19,6 +19,7 @@
   - [Example images](#example-images)
   - [Mandelbrot zoom video](#mandelbrot-zoom-video)
 - [BBC Micro BASIC](#bbc-micro-basic)
+  - [MANDEL3: ECF shading on the Master 128](#mandel3-ecf-shading-on-the-master-128)
 - [Blog posts](#blog-posts)
 - [Links](#links)
 - [License](#license)
@@ -424,15 +425,19 @@ python andromeda_zoom.py --cx -0.65 --cy 0 --mag 0.9 --iter 300 --log -o whole.p
 
 ## BBC Micro BASIC
 
-Two Mandelbrot programs for the BBC Micro in BBC BASIC 2, drawn in MODE 2
+Three Mandelbrot programs for the BBC Micro in BBC BASIC, drawn in MODE 2
 (160×256 pixels, 8 colours):
 
 | Program   | Listing                               | Draws the picture                                          |
 | --------- | ------------------------------------- | ---------------------------------------------------------- |
 | `MANDEL`  | [`MANDEL.bas`](bbc/MANDEL.bas)   | a row at a time, from the top and bottom edges inwards     |
 | `MANDEL2` | [`MANDEL2.bas`](bbc/MANDEL2.bas) | one big block first, then halving the block size each pass |
+| `MANDEL3` | [`MANDEL3.bas`](bbc/MANDEL3.bas) | like `MANDEL2`, with smooth ECF-dithered shading (Master 128) |
 
-`bbc/mandel.ssd` is an Acorn DFS disc image with both programs on it.
+`bbc/mandel.ssd` is an Acorn DFS disc image with all three programs on it.
+`MANDEL` and `MANDEL2` run on any BBC Micro. `MANDEL3` needs a Master 128
+(or a BBC with the Graphics Extension ROM) for ECF patterns and rectangle
+fill.
 
 ![BBC Micro MODE 2 Mandelbrot set](bbc/screenshots/mandel.png)
 
@@ -442,6 +447,7 @@ To run it in an emulator such as [b2](https://github.com/tom-seddon/b2) or
 ```basic
 CHAIN "MANDEL"
 CHAIN "MANDEL2"
+CHAIN "MANDEL3"
 ```
 
 Or paste a listing at the `>` prompt and type `RUN`.
@@ -480,6 +486,37 @@ The finished picture is the same as `MANDEL`'s. Measured in emulated time
 on a 2 MHz Model B, a full screen takes about 39 minutes with `MANDEL` and
 about 43 with `MANDEL2`. The extra 4 minutes go on drawing the blocks, but
 `MANDEL2` shows a recognisable set within the first minute or so.
+
+### MANDEL3: ECF shading on the Master 128
+
+MODE 2 only has eight solid colours. `MANDEL3` gets smooth gradients from
+them with the Master 128's Extended Colour Fill (ECF) patterns, which the
+Graphics Extension ROM added to earlier BBCs. It was run on a Master 128
+with a Master Turbo (a 4 MHz 65C102 second processor).
+
+![MANDEL3 finished, with ECF-dithered gradients](bbc/screenshots/mandel3.png)
+
+- Like `mandelbrot3` and `mandelbrot4`, it uses escape radius 256 and the
+  fractional count `n + 1 − log₂(log|z|)`, with up to 64 iterations.
+- The count picks a place on a ramp of blue, cyan, white, yellow, red and
+  magenta. Between each pair of neighbouring colours there are three dither
+  mixes (25%, 50% and 75%), so the ramp has 24 shades instead of 6.
+- A mix is an ECF pattern, defined with `VDU 23,12` as a 2×4 pixel tile of
+  the two colours and selected with `GCOL 16,0`. Only one pattern slot is
+  used. It's redefined only when the shade changes, which is rarely,
+  because neighbouring pixels are usually the same shade.
+- The pattern is fixed to the screen, so filling a single pixel with it
+  picks out that pixel's colour in the tile. Plotting pixel by pixel still
+  gives an even dither.
+- It resolves progressively like `MANDEL2`, but draws each block with the
+  Master's rectangle fill (`MOVE` then `PLOT 101`) instead of two triangles.
+  Big early blocks show the dither too:
+
+![MANDEL3 part-way through its 8-pixel pass](bbc/screenshots/mandel3-resolving.png)
+
+A full screen took about 27½ minutes (emulated time) on the Master Turbo,
+despite twice the iterations and a much larger escape radius than
+`MANDEL2`.
 
 ## Blog posts
 
