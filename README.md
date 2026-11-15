@@ -18,11 +18,12 @@
 - [Python scripts](#python-scripts)
   - [Example images](#example-images)
   - [Mandelbrot zoom video](#mandelbrot-zoom-video)
+- [BBC Micro BASIC](#bbc-micro-basic)
 - [Blog posts](#blog-posts)
 - [Links](#links)
 - [License](#license)
 
-Fractal toys in two languages:
+Fractal toys in three languages:
 
 - [`pascal/`](pascal/): Mandelbrot set renderers for the terminal, written
   in Free Pascal (most of this README).
@@ -30,6 +31,8 @@ Fractal toys in two languages:
   strange-attractor image generators that write retro-styled PNGs and
   animated GIFs (see [Python scripts](#python-scripts)), plus a Mandelbrot
   deep-zoom video renderer (see [Mandelbrot zoom video](#mandelbrot-zoom-video)).
+- [`bbc/`](bbc/): a Mandelbrot set in BBC BASIC for the BBC Micro, drawn in
+  MODE 2 (see [BBC Micro BASIC](#bbc-micro-basic)).
 
 There are five Pascal programs. Each one builds on the one before it, going
 from plain ASCII art to an interactive, multithreaded truecolor explorer.
@@ -418,6 +421,40 @@ Stills from along the default zoom, made by
 python andromeda_zoom.py                               # andromeda_zoom.png at the target
 python andromeda_zoom.py --cx -0.65 --cy 0 --mag 0.9 --iter 300 --log -o whole.png
 ```
+
+## BBC Micro BASIC
+
+`bbc/MANDEL.bas` is a Mandelbrot set for the BBC Micro in BBC BASIC 2,
+drawn in MODE 2 (160×256 pixels, 8 colours). `bbc/mandel.ssd` is an Acorn
+DFS disc image with the same program saved as `MANDEL`.
+
+![BBC Micro MODE 2 Mandelbrot set](bbc/screenshots/mandel.png)
+
+To run it in an emulator such as [b2](https://github.com/tom-seddon/b2) or
+[jsbeeb](https://bbc.xania.org/), load `mandel.ssd` into drive 0 and type:
+
+```basic
+CHAIN "MANDEL"
+```
+
+Or paste the listing in `MANDEL.bas` at the `>` prompt and type `RUN`.
+Press any key when it's finished to return to MODE 7.
+
+How it works:
+
+- The view runs from −2.2 to 0.98 on the real axis and ±1.28 on the
+  imaginary axis, so each pixel covers 0.02 × 0.01 to match MODE 2's wide
+  pixels and keep the set round.
+- The set is symmetric about the real axis, so it computes only the top
+  128 rows and plots each pixel twice, filling in from the top and
+  bottom towards the middle.
+- Like `mandelbrot5`, it skips points in the main cardioid and the period-2
+  bulb with a direct formula, since they would run the full 32 iterations.
+- Escaping points are coloured `1 + n MOD 7`, cycling through the seven
+  non-black colours. Points that never escape are black.
+
+A full screen takes about 39 minutes on a 2 MHz Model B (measured in emulated
+time), filling in from the edges and slowing down as it nears the set.
 
 ## Blog posts
 
