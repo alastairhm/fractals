@@ -20,6 +20,7 @@
   - [Mandelbrot zoom video](#mandelbrot-zoom-video)
 - [BBC Micro BASIC](#bbc-micro-basic)
   - [MANDEL3: ECF shading on the Master 128](#mandel3-ecf-shading-on-the-master-128)
+  - [MANDEL4: 6502 assembler](#mandel4-6502-assembler)
 - [Commodore 64 BASIC](#commodore-64-basic)
 - [Blog posts](#blog-posts)
 - [Links](#links)
@@ -428,7 +429,7 @@ python andromeda_zoom.py --cx -0.65 --cy 0 --mag 0.9 --iter 300 --log -o whole.p
 
 ## BBC Micro BASIC
 
-Three Mandelbrot programs for the BBC Micro in BBC BASIC, drawn in MODE 2
+Four Mandelbrot programs for the BBC Micro in BBC BASIC, drawn in MODE 2
 (160×256 pixels, 8 colours):
 
 | Program   | Listing                               | Draws the picture                                          |
@@ -436,11 +437,12 @@ Three Mandelbrot programs for the BBC Micro in BBC BASIC, drawn in MODE 2
 | `MANDEL`  | [`MANDEL.bas`](bbc/MANDEL.bas)   | a row at a time, from the top and bottom edges inwards     |
 | `MANDEL2` | [`MANDEL2.bas`](bbc/MANDEL2.bas) | one big block first, then halving the block size each pass |
 | `MANDEL3` | [`MANDEL3.bas`](bbc/MANDEL3.bas) | like `MANDEL2`, with smooth ECF-dithered shading (Master 128) |
+| `MANDEL4` | [`MANDEL4.bas`](bbc/MANDEL4.bas) | like `MANDEL`, in 6502 machine code from BASIC's assembler  |
 
-`bbc/mandel.ssd` is an Acorn DFS disc image with all three programs on it.
-`MANDEL` and `MANDEL2` run on any BBC Micro. `MANDEL3` needs a Master 128
-(or a BBC with the Graphics Extension ROM) for ECF patterns and rectangle
-fill.
+`bbc/mandel.ssd` is an Acorn DFS disc image with all four programs on it.
+`MANDEL`, `MANDEL2` and `MANDEL4` run on any BBC Micro. `MANDEL3` needs a
+Master 128 (or a BBC with the Graphics Extension ROM) for ECF patterns and
+rectangle fill.
 
 ![BBC Micro MODE 2 Mandelbrot set](bbc/screenshots/mandel.png)
 
@@ -454,6 +456,7 @@ load `mandel.ssd` into drive 0 and type:
 CHAIN "MANDEL"
 CHAIN "MANDEL2"
 CHAIN "MANDEL3"
+CHAIN "MANDEL4"
 ```
 
 Or paste a listing at the `>` prompt and type `RUN`.
@@ -523,6 +526,43 @@ with a Master Turbo (a 4 MHz 65C102 second processor).
 A full screen took about 27½ minutes (emulated time) on the Master Turbo,
 despite twice the iterations and a much larger escape radius than
 `MANDEL2`.
+
+### MANDEL4: 6502 assembler
+
+`MANDEL4` draws the same picture as `MANDEL`, but the maths runs as 6502
+machine code, written with BBC BASIC's built-in assembler (the `[ ... ]`
+block). BASIC sets things up, runs the two assembler passes and then
+`CALL`s the machine code once per row.
+
+![MANDEL4 finished, the same picture as MANDEL](bbc/screenshots/mandel4.png)
+
+- Numbers are 16-bit fixed point with 12 fractional bits (4.12), so the
+  range is ±8 and the resolution 1/4096. The view and colours are
+  `MANDEL`'s, with the pixel steps rounded to whole units (82 for 0.02,
+  and 40.96 per row computed in BASIC).
+- The 6502 has no multiply instruction, so squares come from a
+  quarter-square table, `f(n) = n²/4` for n = 0 to 510, which BASIC builds
+  at &900–&CFF (two 511-byte tables, low and high bytes). For a 14-bit
+  value `v = 256h + l`, `v² = 65536·h² + 512·h·l + l²`, with `h² = f(2h)`,
+  `l² = f(2l)` and `h·l = f(h+l) − f(|h−l|)`.
+- Each iteration only needs three squares, because
+  `2·zr·zi = (zr+zi)² − zr² − zi²`. Before squaring it checks that
+  |zr| and |zi| are below 2, which keeps every square in the table's range
+  and is also an early escape test.
+- Pixels are written straight into MODE 2 screen memory, two to a byte,
+  to the row and its mirror image at once. A table converts each colour
+  to its bit pattern for the left pixel, and the right pixel is that
+  shifted one bit.
+- Unlike `MANDEL` it doesn't skip the main cardioid and period-2 bulb, so
+  it does all 199,000 or so iterations instead of 89,000.
+
+Rounding in the fixed-point maths changes the escape count of about 4% of
+the pixels by one, all near the edge of the set, so the picture is very
+slightly different from `MANDEL`'s.
+
+On a 2 MHz Model B it takes **104 seconds**, compared with 39 minutes for
+`MANDEL`: about 22 times faster, despite doing more than twice the
+iterations.
 
 ## Commodore 64 BASIC
 
