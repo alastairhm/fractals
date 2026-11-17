@@ -20,6 +20,7 @@
   - [Mandelbrot zoom video](#mandelbrot-zoom-video)
 - [BBC Micro BASIC](#bbc-micro-basic)
   - [MANDEL3: ECF shading on the Master 128](#mandel3-ecf-shading-on-the-master-128)
+- [Commodore 64 BASIC](#commodore-64-basic)
 - [Blog posts](#blog-posts)
 - [Links](#links)
 - [License](#license)
@@ -34,6 +35,8 @@ Fractal toys in three languages:
   deep-zoom video renderer (see [Mandelbrot zoom video](#mandelbrot-zoom-video)).
 - [`bbc/`](bbc/): Mandelbrot sets in BBC BASIC for the BBC Micro, drawn in
   MODE 2 (see [BBC Micro BASIC](#bbc-micro-basic)).
+- [`c64/`](c64/): Mandelbrot sets in Commodore BASIC V2 for the C64, drawn
+  in multicolour bitmap mode (see [Commodore 64 BASIC](#commodore-64-basic)).
 
 There are five Pascal programs. Each one builds on the one before it, going
 from plain ASCII art to an interactive, multithreaded truecolor explorer.
@@ -521,6 +524,82 @@ A full screen took about 27½ minutes (emulated time) on the Master Turbo,
 despite twice the iterations and a much larger escape radius than
 `MANDEL2`.
 
+## Commodore 64 BASIC
+
+Two Mandelbrot programs for the Commodore 64 in BASIC V2, drawn in
+multicolour bitmap mode (160×200 pixels, 4 colours):
+
+| Program   | Listing                           | Clears the bitmap with                      |
+| --------- | --------------------------------- | ------------------------------------------- |
+| `MANDEL`  | [`MANDEL.bas`](c64/MANDEL.bas)   | a BASIC `POKE` loop (32½ seconds)            |
+| `MANDEL2` | [`MANDEL2.bas`](c64/MANDEL2.bas) | a 22-byte machine-code routine (`SYS 49152`) |
+
+Apart from the clear they're the same program, and they draw the same
+picture as the BBC `MANDEL`: 32 iterations, filling in from the top and
+bottom edges towards the middle.
+
+![C64 multicolour Mandelbrot set](c64/screenshots/mandel.png)
+
+`c64/mandel.d64` is a 1541 disk image with both programs on it. They were
+typed in, run and timed in [VICE](https://vice-emu.sourceforge.io/)
+(`x64sc`). To run them, attach `mandel.d64` to drive 8 and type:
+
+```basic
+LOAD"MANDEL",8
+RUN
+```
+
+(or `LOAD"MANDEL2",8`). Press any key when it's finished to get back to
+the text screen, which shows the drawing time in seconds.
+
+The listings are in upper case for readability. To build a `.prg` from one
+with VICE's `petcat`, lower-case it first, since petcat reads unshifted
+PETSCII as lower case:
+
+```sh
+tr 'A-Z' 'a-z' < c64/MANDEL.bas | petcat -w2 -o mandel.prg --
+```
+
+How it works:
+
+- BASIC V2 has no graphics commands, so everything is `POKE`s. Lines
+  60–70 turn on bitmap mode (53265), multicolour mode (53270) and point
+  the VIC-II at a bitmap at 8192 (53272). `POKE 55,0:POKE 56,32:CLR` on
+  line 20 lowers the top of BASIC memory so variables can't grow into the
+  bitmap.
+- In multicolour mode each byte holds four 2-bit pixels. Bit pair `00` is
+  the background colour (black, for inside the set). `01` and `10` come
+  from the cell's byte in screen RAM (blue and light blue), and `11` from
+  colour RAM (white). Line 80 sets every cell to the same three colours.
+- The bitmap is laid out in 8×8 character cells, not scan lines, so the
+  byte for pixel (x, y) is `8192 + INT(y/8)*320 + INT(x/4)*8 + (y AND 7)`.
+  The pixel's bits are ORed into that byte, with the shift looked up in
+  `W()`.
+- The view runs from −2.48 to 0.95 on the real axis and ±1.14 on the
+  imaginary axis. Each pixel covers 0.0216 × 0.0115, because multicolour
+  pixels are about twice as wide as they are tall.
+- Escaping points are coloured `1 + n MOD 3`. BASIC V2 has no `MOD`, so a
+  table `K()` is filled in with `I-INT(I/3)*3` at the start.
+- The speed tricks are standard C64 ones. The variables used most are
+  defined first on line 30, because BASIC V2 finds variables by searching
+  them in the order they were created. Constants like 4 live in
+  variables, because BASIC re-parses a number from its text every time it
+  meets one. The inner loop is one line ending `IF A+B<F THEN NEXT`: when
+  the point escapes, the `IF` fails and execution drops to the next line,
+  leaving `N` as the escape count.
+
+Measured with the C64's `TI` jiffy clock on a PAL machine, the drawing (not
+counting the clear) takes 4056 seconds, about **67½ minutes**, compared
+with 39 minutes for the BBC `MANDEL` on a 2 MHz Model B. BASIC V2's
+floating point is slower than BBC BASIC's, the C64's 6510 runs at
+0.985 MHz, and working out each pixel's address in BASIC costs more on top.
+`MANDEL2`'s clear takes a fraction of a second instead of 32½ seconds, but
+its drawing takes 4096 seconds, 40 seconds longer, so overall it comes out
+slightly slower. Its `READ D` creates one more variable before the drawing
+starts. BASIC V2 searches variables in the order they were created, so
+every variable made after `D` (`T0`, `Y`, `C2`, `Q`, `V`, `O`) is a little
+slower to find, and that adds up over the whole picture.
+
 ## Blog posts
 
 I've written about this repo as it grew, on my blog
@@ -537,6 +616,9 @@ I've written about this repo as it grew, on my blog
 - [Mandelbrots on the BBC Micro](https://blog.0x32.co.uk/posts/bbc-micro-mandelbrot/):
   the three BBC BASIC programs in `bbc/`, ECF shading on the Master 128,
   and how long they really take.
+- [A BBC Owner's Mandelbrot on the Commodore 64](https://blog.0x32.co.uk/posts/c64-mandelbrot/):
+  the two C64 BASIC programs in `c64/`, as seen by someone who grew up
+  on BBC BASIC.
 
 And about the related repos listed under [Links](#links):
 

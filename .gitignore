@@ -27,3 +27,6 @@ __pycache__/
 
 # Rendered videos
 *.mp4
+
+# Tokenised C64 programs (built from the .bas listings, also on mandel.d64)
+/c64/*.prg
