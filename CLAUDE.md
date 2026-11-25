@@ -4,7 +4,13 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 
 ## What this is
 
-Five standalone Free Pascal programs in `pascal/` (with their `Makefile`, `tools/` and `screenshots/`) that render the Mandelbrot set to the terminal. Each `mandelbrotN.pas` is a self-contained progression on the previous one (plain ASCII → log-scaled ASCII gradient → 24-bit coloured ASCII with smooth escape counts → truecolor `▀` half blocks with pan/zoom and auto contrast → interactive, multithreaded explorer). The README (at the repo root, image/link paths prefixed `pascal/`) has the full feature table, argument reference and an explanation of the algorithms. `python/` holds separate Python fractal scripts.
+Five standalone Free Pascal programs in `pascal/` (with their `Makefile`, `tools/` and `screenshots/`) that render the Mandelbrot set to the terminal, plus Python and 8-bit BASIC programs in other folders. Each `mandelbrotN.pas` is a self-contained progression on the previous one (plain ASCII → log-scaled ASCII gradient → 24-bit coloured ASCII with smooth escape counts → truecolor `▀` half blocks with pan/zoom and auto contrast → interactive, multithreaded explorer). The README (at the repo root, image/link paths prefixed `pascal/`) has the full feature table, argument reference and an explanation of the algorithms.
+
+Other folders, all documented in the README:
+
+- `python/`: standalone Python fractal scripts, the shared `requirements.txt` and `.venv` (gitignored), and `screenshots.sh`.
+- `mazes/` (`maze.py`, `cat_maze.py`), `City Map Generator/` (`citymap.py`; note the spaces in the path), `glyphs/` (`glyphs.py`) and `space_city/` (`space_city.py`): seeded generative-art scripts in Python. `glyphs_v1.py`, `glyphs_v2.py` and `space_city_old.py` are earlier versions kept for reference; change the unsuffixed script.
+- `bbc/` and `c64/`: BASIC (and 6502 assembler) Mandelbrots for the BBC Micro and Commodore 64, with disc images.
 
 ## Commands
 
@@ -25,6 +31,16 @@ There is no unit test suite or linter; `make check` is the only automated test. 
 
 The screenshot tools need Python with Pillow (`python-pillow`) and default to `/usr/share/fonts/TTF/JetBrainsMono-Regular.ttf`.
 
+Python scripts, from the repo root (the Pascal paths above don't apply):
+
+```sh
+python3 -m venv python/.venv && python/.venv/bin/pip install -r python/requirements.txt
+python/.venv/bin/python mazes/maze.py --seed 3 --out /tmp/maze.png
+python/screenshots.sh      # regenerate all Python example images (about a minute, needs ffmpeg)
+```
+
+There are no tests for the Python scripts; run the one you changed. Most write to the current directory by default, so pass an output path or run from a scratch directory.
+
 ## Architecture notes
 
 - **No shared unit.** Each program is deliberately self-contained: argument parsing (`IntArg`/`FloatArg`/`ArgOr`), `-h`/`--help` handling and the help text are duplicated in every file. A fix to common behaviour (argument validation, help, divide-by-zero guards) usually needs applying to every file.
@@ -41,3 +57,5 @@ The screenshot tools need Python with Pillow (`python-pillow`) and default to `/
 ## Keeping docs in sync
 
 The README's screenshot section shows the exact commands used in `tools/screenshots.sh`; if output or arguments change, regenerate the screenshots and keep the README commands, usage tables and each program's header comment / `ShowHelp` text consistent.
+
+The same goes for the Python scripts and `python/screenshots.sh`, which writes to `python/screenshots/` and to `screenshots/` in `mazes/`, `glyphs/`, `space_city/` and `City Map Generator/`. Add any new package a script imports to `python/requirements.txt`. `fractal_tile.py` and `zoom_video.py` depend on their siblings in `python/` (`fractal_tile.py` imports `mandel` from `andromeda_zoom.py`).
