@@ -1,3 +1,7 @@
 numpy
 numba
 pillow
+pycairo
+cairosvg
+matplotlib
+shapely

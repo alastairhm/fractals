@@ -18,6 +18,12 @@
 - [Python scripts](#python-scripts)
   - [Example images](#example-images)
   - [Mandelbrot zoom video](#mandelbrot-zoom-video)
+  - [More Python fractals](#more-python-fractals)
+- [Generative art](#generative-art)
+  - [Mazes](#mazes)
+  - [City maps](#city-maps)
+  - [Glyphs](#glyphs)
+  - [Space city](#space-city)
 - [BBC Micro BASIC](#bbc-micro-basic)
   - [MANDEL3: ECF shading on the Master 128](#mandel3-ecf-shading-on-the-master-128)
   - [MANDEL4: 6502 assembler](#mandel4-6502-assembler)
@@ -33,7 +39,12 @@ Fractal toys in three languages:
 - [`python/`](python/): seeded Koch-curve, Pythagoras-tree and
   strange-attractor image generators that write retro-styled PNGs and
   animated GIFs (see [Python scripts](#python-scripts)), plus a Mandelbrot
-  deep-zoom video renderer (see [Mandelbrot zoom video](#mandelbrot-zoom-video)).
+  deep-zoom video renderer (see [Mandelbrot zoom video](#mandelbrot-zoom-video)),
+  triangle flakes, 3D-printable tiles and a pixel-resolve animation (see
+  [More Python fractals](#more-python-fractals)).
+- [`mazes/`](mazes/), [`City Map Generator/`](City%20Map%20Generator/),
+  [`glyphs/`](glyphs/) and [`space_city/`](space_city/): other seeded
+  generative art in Python (see [Generative art](#generative-art)).
 - [`bbc/`](bbc/): Mandelbrot sets in BBC BASIC for the BBC Micro, drawn in
   MODE 2 (see [BBC Micro BASIC](#bbc-micro-basic)).
 - [`c64/`](c64/): Mandelbrot sets in Commodore BASIC V2 for the C64, drawn
@@ -253,7 +264,7 @@ of steps it took to escape decides the pixel's character or colour.
 
 ## Python scripts
 
-Three standalone scripts in `python/` draw fractals as images. All of them
+The first three standalone scripts in `python/` draw fractals as images. All of them
 need Python 3 with Pillow (`sudo pacman -S python-pillow`), and
 `attractor.py` also needs NumPy (`sudo pacman -S python-numpy`). They write
 their output to the current directory. The commands below are run from the
@@ -315,9 +326,10 @@ python3 python/attractor.py --gif 42             # attractor_42.gif
 
 These are made by
 [`python/screenshots.sh`](python/screenshots.sh), which renders them into
-`python/screenshots/`. Run it again to regenerate them all (it takes about
-30 seconds; the zoom stills below need the virtual environment described
-there).
+`python/screenshots/`, along with the example images for the other Python
+scripts further down. Run it again to regenerate them all (it takes about
+a minute; everything from the zoom stills onwards needs the virtual
+environment described there, plus `ffmpeg`).
 
 #### koch_riff.py
 
@@ -426,6 +438,231 @@ Stills from along the default zoom, made by
 python andromeda_zoom.py                               # andromeda_zoom.png at the target
 python andromeda_zoom.py --cx -0.65 --cy 0 --mag 0.9 --iter 300 --log -o whole.png
 ```
+
+### More Python fractals
+
+These use the same [virtual environment](#mandelbrot-zoom-video). The
+commands are run from `python/` with it activated.
+
+#### triangle_flake.py
+
+Seeded flakes where each triangle sprouts a smaller one from the midpoint of
+each side. Like the scripts above it takes seeds (numbers or text), `--gif`
+and `--sheet`, but not `--size`. `--sheet` writes `sheet_flake.png` and
+`sheet_flake.gif`.
+
+`triangle_flake.py 3`
+
+<img src="python/screenshots/flake.png" width="480" alt="Amber triangle flake for seed 3">
+
+`triangle_flake.py --gif 8`
+
+<img src="python/screenshots/flake-grow.gif" width="480" alt="Animated triangle flake for seed 8 growing level by level">
+
+#### mandelbrot_numba.py
+
+`mandelbrot_numba.py` renders the whole set at 1920×1080 to
+`mandelbrot.png`, using Numba across all cores. It takes no arguments;
+the view is set by constants at the top of the file.
+
+![Mandelbrot set on a red background](python/screenshots/mandelbrot-numba.png)
+
+#### fractal_tile.py
+
+Turns a Mandelbrot view (by default the Andromeda target) into a
+3D-printable tile, as a closed binary STL. `--preview` also saves the height
+map as a PNG, as shown here (brighter is taller).
+
+```sh
+python fractal_tile.py --preview                         # fractal_relief.stl
+python fractal_tile.py --cx -0.65 --cy 0 --mag 0.75 --mode lines -o full_set.stl
+```
+
+| Option                    | Effect                                                     |
+| ------------------------- | ---------------------------------------------------------- |
+| `--mode MODE`             | `relief` (default): terraced height map; `lines`: raised line art; `litho`: lithophane to backlight |
+| `--cx`, `--cy`, `--mag`   | Centre and magnification of the view                       |
+| `--iter N`                | Iteration limit (default 3000)                             |
+| `--size MM`               | Tile width in mm (default 100)                             |
+| `--res N`                 | Grid points per side (default 400)                         |
+| `--base MM`, `--relief MM` | Base thickness and relief height (defaults depend on mode) |
+| `--preview`               | Also save a `_heights.png` height map                      |
+| `-o FILE`                 | Output file (default `fractal_MODE.stl`)                   |
+
+<table>
+<tr>
+<td><img src="python/screenshots/tile-relief.png" alt="Height map of the relief tile: a ring of spirals"></td>
+<td><img src="python/screenshots/tile-lines.png" alt="Height map of the lines tile: white line art on black"></td>
+<td><img src="python/screenshots/tile-litho.png" alt="Height map of the lithophane tile: black lines on white"></td>
+</tr>
+<tr><td align="center">relief</td><td align="center">lines</td><td align="center">litho</td></tr>
+</table>
+
+#### pixel_resolve.py
+
+An MP4 that starts as one giant pixel and splits into 4, 16, 64 … up to
+1024×1024, in a 16-colour palette. It needs `ffmpeg`.
+
+```sh
+python pixel_resolve.py                                        # pixel_resolve.mp4
+python pixel_resolve.py --cx -0.7436 --cy 0.1318 --mag 60 -o seahorse.mp4
+python pixel_resolve.py --order spiral -o pixel_resolve_spiral.mp4
+```
+
+| Option                  | Effect                                                       |
+| ----------------------- | ------------------------------------------------------------ |
+| `--mode MODE`           | `grid` (default): every block splits; `quadtree`: only blocks that still hide detail |
+| `--order ORDER`         | `raster` (default), `random`, `spiral` (inwards) or `spiral-out` |
+| `--shape SHAPE`         | `square` (default) or `circle`                               |
+| `--cx`, `--cy`, `--mag` | Centre and magnification of the view                         |
+| `--iter N`              | Iteration limit (default 512)                                |
+| `--fps`, `--draw`, `--hold`, `--final` | Frame rate, most frames to draw a level, frames to hold each level, frames to hold the last |
+| `--seed N`              | Seed for `--order random` (default 1)                        |
+| `--no-grid`, `--no-hud` | Leave out the quadtree outlines / the label                  |
+| `-o FILE`               | Output file (default `pixel_resolve.mp4`)                    |
+
+<table>
+<tr>
+<td><img src="python/screenshots/pixel-resolve.gif" alt="Animation of the Mandelbrot set resolving from one pixel to full resolution"></td>
+<td><img src="python/screenshots/pixel-resolve-quadtree.gif" alt="The same animation with only detailed blocks splitting"></td>
+</tr>
+<tr><td align="center">grid</td><td align="center">quadtree</td></tr>
+</table>
+
+## Generative art
+
+Not fractals, but in the same spirit: seeded Python generators, where the
+same seed gives the same picture. The packages they need are in
+`python/requirements.txt` (see [Mandelbrot zoom video](#mandelbrot-zoom-video)
+for setting up the virtual environment). The commands are run from the repo
+root with it activated. The images are made by
+[`python/screenshots.sh`](python/screenshots.sh).
+
+### Mazes
+
+[`mazes/maze.py`](mazes/maze.py) draws maze posters with exactly one route
+between any two cells, and [`mazes/cat_maze.py`](mazes/cat_maze.py) hides
+black cats in a thick-lined meander pattern.
+
+```sh
+python mazes/maze.py --algo wilson --size 40 60 --seed 3
+python mazes/maze.py --algo all                       # one poster per algorithm
+python mazes/cat_maze.py -o cats.png --seed 11
+python mazes/cat_maze.py --fg "#f2f0ea" --bg "#161616"  # inverted, cats.svg
+```
+
+`maze.py` options:
+
+| Option          | Effect                                                              |
+| --------------- | ------------------------------------------------------------------- |
+| `--algo ALGO`   | `backtracker` (default), `aldous`, `wilson` or `all`                |
+| `--style STYLE` | `flood` (default): coloured by distance from the entrance; `lines`: walls only |
+| `--palette P`   | `classic` (default), `night`, `mint` or `blush`                     |
+| `--size W H`    | Size in cells (default 30 45)                                       |
+| `--no-solution` | Leave out the solution path                                         |
+| `--title TEXT`  | Title (default: the algorithm's name)                               |
+| `--seed N`, `--out FILE`, `--dpi N` | Seed, output file (default `maze.png`), resolution (default 200) |
+
+`cat_maze.py` options:
+
+| Option           | Effect                                                    |
+| ---------------- | --------------------------------------------------------- |
+| `-W N`, `-H N`   | Grid columns and rows (default 20 × 36)                   |
+| `--cats N`       | Number of cats (default: by area)                         |
+| `--scale N`      | Pixels per grid cell (default 40)                         |
+| `--thickness F`  | Line thickness as a fraction of a cell (default 0.62)     |
+| `--fg`, `--bg`   | Colours                                                   |
+| `--count N`      | How many images to make                                   |
+| `--seed N`, `-o FILE` | Seed, and output `.svg` or `.png` (default `cats.svg`) |
+
+<table>
+<tr>
+<td><img src="mazes/screenshots/maze-backtracker.png" alt="Backtracker maze poster"></td>
+<td><img src="mazes/screenshots/maze-aldous.png" alt="Aldous-Broder maze poster"></td>
+<td><img src="mazes/screenshots/maze-wilson.png" alt="Wilson maze poster"></td>
+</tr>
+<tr><td align="center">--algo backtracker --seed 3</td><td align="center">--algo aldous --seed 3</td><td align="center">--algo wilson --seed 3</td></tr>
+</table>
+
+<table>
+<tr>
+<td><img src="mazes/screenshots/maze-lines.png" width="400" alt="Night-palette maze drawn as lines with its solution in yellow"></td>
+<td><img src="mazes/screenshots/cat-maze.png" width="334" alt="Black cats hidden in a meander pattern"></td>
+</tr>
+<tr><td align="center">maze.py --style lines --palette night --seed 3</td><td align="center">cat_maze.py --seed 11</td></tr>
+</table>
+
+### City maps
+
+[`citymap.py`](City%20Map%20Generator/citymap.py) draws minimalist posters
+of imaginary cities, with a random name unless you give one.
+
+```sh
+python "City Map Generator/citymap.py" --seed 42 --name Dishforth --out dishforth.png
+python "City Map Generator/citymap.py" --palette night --count 4
+```
+
+| Option        | Effect                                                             |
+| ------------- | ------------------------------------------------------------------ |
+| `--name NAME` | City name (default random)                                         |
+| `--palette P` | `classic` (default), `night`, `mint` or `blush`                    |
+| `--align F`   | 0–1 (default 0.9): how strictly districts follow the street grid; lower is more of a patchwork |
+| `--count N`   | How many posters to make                                           |
+| `--seed N`, `--out FILE`, `--dpi N` | Seed, output file (default `city.png`), resolution (default 200) |
+
+<table>
+<tr>
+<td><img src="City%20Map%20Generator/screenshots/city.png" alt="Map poster of Dishforth in the classic palette"></td>
+<td><img src="City%20Map%20Generator/screenshots/city-night.png" alt="Map poster of Ravenhythe in the night palette"></td>
+</tr>
+<tr><td align="center">--seed 42 --name Dishforth</td><td align="center">--seed 7 --name Ravenhythe --palette night</td></tr>
+</table>
+
+### Glyphs
+
+[`glyphs/glyphs.py`](glyphs/glyphs.py) draws sheets of hand-drawn "alien
+script" as SVG, and as PNG too with `--png`. `glyphs_v1.py` and
+`glyphs_v2.py` are earlier versions.
+
+```sh
+python glyphs/glyphs.py --seed 42 --lines --png glyphs.png
+python glyphs/glyphs.py --rows 1 --cols 1 --size 400 --color "#1e8c2b"
+```
+
+| Option               | Effect                                                  |
+| -------------------- | ------------------------------------------------------- |
+| `--rows N`, `--cols N` | Sheet size (default 3 × 4)                            |
+| `--size PX`          | Glyph width (default 240)                               |
+| `--color HEX`        | Shades of one colour (default: a random hue per glyph)  |
+| `--outline`          | Thick outlines only                                     |
+| `--lines`            | Ruled-paper lines behind the glyphs                     |
+| `--l-chance F`       | Chance a column becomes an L (default 0.35)             |
+| `--ellipse-chance F` | Chance a circle becomes a tilted ellipse (default 0.5)  |
+| `--seed N`, `--out FILE`, `--png FILE` | Seed, SVG output (default `glyphs.svg`), optional PNG output |
+
+`glyphs.py --seed 42 --lines`
+
+![Sheet of twelve coloured glyphs on ruled paper](glyphs/screenshots/glyphs.png)
+
+`glyphs.py --seed 7 --outline`
+
+![Sheet of twelve outlined glyphs](glyphs/screenshots/glyphs-outline.png)
+
+### Space city
+
+[`space_city/space_city.py`](space_city/space_city.py) draws a pen-and-ink
+city of radial hubs, 1400×2300. The seed defaults to the current UTC time,
+and the output to `space_city_SEED.png`. `space_city_old.py` is an earlier
+version. It needs `pycairo`, which may be compiled on install, so have a C
+compiler and the `cairo` library (`sudo pacman -S cairo`) ready.
+
+```sh
+python space_city/space_city.py [seed] [out.png]
+```
+
+`space_city.py 42`
+
+<img src="space_city/screenshots/space-city.png" width="600" alt="Black and white space city with radial hubs for seed 42">
 
 ## BBC Micro BASIC
 
