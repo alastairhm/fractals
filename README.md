@@ -896,6 +896,9 @@ I've written about this repo as it grew, on my blog
 - [A BBC Owner's Mandelbrot on the Commodore 64](https://blog.0x32.co.uk/posts/c64-mandelbrot/):
   the two C64 BASIC programs in `c64/`, as seen by someone who grew up
   on BBC BASIC.
+- [Mazes, Maps, Glyphs and a Space City](https://blog.0x32.co.uk/posts/generative-art-scripts/):
+  the generative art scripts, and the pixel-resolve, 3D tile, triangle-flake
+  and Numba Mandelbrot scripts in `python/`.
 
 And about the related repos listed under [Links](#links):
 
